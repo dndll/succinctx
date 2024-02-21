@@ -144,17 +144,20 @@ impl<C: Circuit> Plonky2xFunction for C {
         // start the gnark wrapper process.
         let gnark_wrapper_process = if let ProofRequest::Bytes(_) = request {
             if !args.wrapper_path.is_empty() {
-                let child_process = std::process::Command::new(
+                let command = &mut std::process::Command::new(
                     path::Path::new(&args.wrapper_path).join("verifier"),
-                )
-                .arg("-prove")
-                .arg("-data")
-                .arg(path::Path::new(&args.wrapper_path))
-                .stdout(std::process::Stdio::inherit())
-                .stderr(std::process::Stdio::inherit())
-                .stdin(std::process::Stdio::piped())
-                .spawn()
-                .expect("Failed to start gnark wrapper process");
+                );
+                let cmd = command
+                    .arg("-prove")
+                    .arg("-data")
+                    .arg(path::Path::new(&args.wrapper_path));
+                info!("Starting gnark wrapper process {:?}", cmd);
+                let child_process = cmd
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
+                    .stdin(std::process::Stdio::piped())
+                    .spawn()
+                    .expect("Failed to start gnark wrapper process");
                 Some(child_process)
             } else {
                 None
@@ -286,6 +289,7 @@ impl<C: Circuit> Plonky2xFunction for C {
 
     fn verifier(circuit_digest: &str, wrapper_path: &str) -> String {
         let wrapper_verifier_path = format!("{}/Verifier.sol", wrapper_path);
+        info!("Loading verifier from {}...", wrapper_verifier_path);
         let wrapper_verifier_contract = fs::read_to_string(wrapper_verifier_path)
             .expect("Failed to read wrapper_verifier_path");
         let generated_contract = wrapper_verifier_contract
