@@ -3,7 +3,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use std::{env, fs};
 
-use alloy_primitives::{hex, Address, Bytes, B256};
+pub use alloy_primitives::{hex, Address, Bytes, B256};
 use anyhow::{Error, Result};
 use ethers::contract::abigen;
 use ethers::middleware::SignerMiddleware;
